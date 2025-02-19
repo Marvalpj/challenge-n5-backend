@@ -1,0 +1,28 @@
+# Ignorar directorios y archivos binarios
+bin/
+obj/
+publish/
+
+# Ignorar archivos temporales y de compilación
+*.user
+*.csproj.user
+*.suo
+*.log
+*.temp
+*.TMP
+*.tmp
+*.swp
+
+# Ignorar archivos de configuración de IDE
+.vscode/
+.idea/
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar otros archivos específicos
+*.pdb
+*.mdb
+*.cache
+*.wakatime-project
