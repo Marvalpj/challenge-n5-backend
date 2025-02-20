@@ -12,8 +12,15 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__Database=Server=sqlserver;Database=challenge;User Id=sa;Password=yourStrong(!)Password;TrustServerCertificate=True;
+      - kafka__bootstrapServer=kafka:9092
+      - elasticsearch__uri=http://elasticsearch:9200
+      - elasticsearch__defaultIndex=permissions
+      - elasticsearch__username=elastic
+      - elasticsearch__password=12345678 
     depends_on:
       - sqlserver
+      - kafka
+      - elasticsearch
   
   # configuracion zookeper para kafka
   zookeeper:
