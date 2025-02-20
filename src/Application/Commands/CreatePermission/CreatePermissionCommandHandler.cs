@@ -30,7 +30,6 @@ namespace Application.Commands.CreatePermission
                 if (string.IsNullOrEmpty(request.NameEmployee))
                     return DomainError.Permission.PermissionNameIsEmpty;
 
-
                 if (string.IsNullOrEmpty(request.LastNameEmployee))
                     return DomainError.Permission.PermissionLastNameIsEmpty;
 

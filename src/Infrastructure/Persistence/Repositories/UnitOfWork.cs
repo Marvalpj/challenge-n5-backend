@@ -21,9 +21,9 @@ namespace Infrastructure.Persistence.Repositories
             return new Repository<T>(_context);
         }
 
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return await _context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
         public void Dispose()
         {
