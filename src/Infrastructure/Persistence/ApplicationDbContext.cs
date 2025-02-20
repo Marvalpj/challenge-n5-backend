@@ -1,18 +1,13 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence
 {
     public class ApplicationDbContext : DbContext
     {
 
-        public DbSet<Permission> permissions { get; set; }
-        public DbSet<PermissionType> permissionTypes { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<PermissionType> PermissionTypes { get; set; }
 
         public ApplicationDbContext(DbContextOptions options)
             : base(options)
