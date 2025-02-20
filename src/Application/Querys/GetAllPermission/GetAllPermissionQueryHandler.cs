@@ -11,17 +11,19 @@ namespace Application.Querys.GetAllPermission
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IElasticsearchRepository elasticsearchRepository;
+        private readonly IKafkaProducer kafkaProducer;
 
-        public GetAllPermissionQueryHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
+        public GetAllPermissionQueryHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository, IKafkaProducer kafkaProducer)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
+            this.kafkaProducer = kafkaProducer ?? throw new ArgumentNullException(nameof(kafkaProducer));
         }
         public async Task<ErrorOr<IEnumerable<PermissionDto>>> Handle(GetAllPermissionQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                //await kafkaProducer.ProduceMessage("permission-topic", "get - permissions");
+                await kafkaProducer.ProduceMessage("permission-topic", "get - permissions");
 
                 IEnumerable<Permission> pElastic = await elasticsearchRepository.GetallAsync();
                 if (pElastic is not null)

@@ -4,6 +4,7 @@ using Domain.Errors;
 using Domain.Interfaces;
 using ErrorOr;
 using MediatR;
+using Newtonsoft.Json;
 
 namespace Application.Commands.UpdatePermission
 {
@@ -11,17 +12,21 @@ namespace Application.Commands.UpdatePermission
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IElasticsearchRepository elasticsearchRepository;
+        private readonly IKafkaProducer kafkaProducer;
 
-        public UpdatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
+        public UpdatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository, IKafkaProducer kafkaProducer)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
+            this.kafkaProducer = kafkaProducer ?? throw new ArgumentNullException(nameof(kafkaProducer));
         }
 
         public async Task<ErrorOr<Unit>> Handle(UpdatePermissionCommand request, CancellationToken cancellationToken)
         {
             try
             {
+                await kafkaProducer.ProduceMessage("permission-topic", "modify - permission", JsonConvert.SerializeObject(request));
+                
                 if (await unitOfWork.Repository<Permission>().GetByIdAsync(request.Id) is not Permission permission)
                     return DomainError.Permission.PermissionIdDoesNotExist;
 
@@ -35,7 +40,6 @@ namespace Application.Commands.UpdatePermission
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 await elasticsearchRepository.UpdateIndex(permission);
-                // await kafkaProducer.ProduceMessage("permission-topic", "modify - permission", JsonConvert.SerializeObject(permission));
 
                 return Unit.Value;
             }

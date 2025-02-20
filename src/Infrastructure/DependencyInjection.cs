@@ -2,6 +2,7 @@
 using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
+using Infrastructure.Service;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,15 +22,16 @@ namespace Infrastructure
         {
             // inyecta base de datos
             services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("database")));
-            //services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+            
+            // unit of work 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IElasticsearchRepository, ElasticsearchRepository>();
 
             // inyecta repositorios 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-            // inyecta servicios
-            //services.AddScoped<IKafkaProducer>(p => new KafkaProducer(configuration["kafka:bootstrapServer"]));
+            // servicio de kafka 
+            services.AddSingleton<IKafkaProducer>(p => new KafkaProducer(configuration["kafka:bootstrapServer"]));
             
             // cliente de elastic
             services.AddSingleton<ElasticClientService>();

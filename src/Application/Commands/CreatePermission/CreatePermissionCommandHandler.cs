@@ -4,6 +4,7 @@ using Domain.Errors;
 using Domain.Interfaces;
 using ErrorOr;
 using MediatR;
+using Newtonsoft.Json;
 
 namespace Application.Commands.CreatePermission
 {
@@ -11,17 +12,21 @@ namespace Application.Commands.CreatePermission
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IElasticsearchRepository elasticsearchRepository;
+        private readonly IKafkaProducer kafkaProducer;
 
-        public CreatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
+        public CreatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository, IKafkaProducer kafkaProducer)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
+            this.kafkaProducer = kafkaProducer ?? throw new ArgumentNullException(nameof(kafkaProducer));
         }
 
         public async Task<ErrorOr<Unit>> Handle(CreatePermissionCommand request, CancellationToken cancellationToken)
         {
             try
             {
+                await kafkaProducer.ProduceMessage("permission-topic", "request permission", JsonConvert.SerializeObject(request));
+                
                 if (string.IsNullOrEmpty(request.NameEmployee))
                     return DomainError.Permission.PermissionNameIsEmpty;
 
@@ -43,9 +48,6 @@ namespace Application.Commands.CreatePermission
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 await elasticsearchRepository.Index(permission);
-
-                //var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-                //await kafkaProducer.ProduceMessage("permission-topic", "request permission", JsonConvert.SerializeObject(permission, settings));
 
                 return Unit.Value;
             }

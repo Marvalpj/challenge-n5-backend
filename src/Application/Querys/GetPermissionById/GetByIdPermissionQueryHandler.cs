@@ -12,17 +12,19 @@ namespace Application.Querys.GetPermissionById
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IElasticsearchRepository elasticsearchRepository;
+        private readonly IKafkaProducer kafkaProducer;
 
-        public GetByIdPermissionQueryHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
+        public GetByIdPermissionQueryHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository, IKafkaProducer kafkaProducer)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
+            this.kafkaProducer = kafkaProducer ?? throw new ArgumentNullException(nameof(kafkaProducer));
         }
         public async Task<ErrorOr<PermissionDto>> Handle(GetByIdPermissionQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                //await kafkaProducer.ProduceMessage("permission-topic", "get - permission");
+                await kafkaProducer.ProduceMessage("permission-topic", "getById - permission");
 
                 Permission pElastic = await elasticsearchRepository.GetByIdAsync(request.Id.ToString());
                 if(pElastic is not null)
