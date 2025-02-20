@@ -12,5 +12,5 @@ docker-compose up -d
 # Creacion del topico en Kafka            
 ### La unica tarea que no se pudo automatizar es la creacion del topico en Kafka. Para hacerlo, utiliza el siguiente comando:
 ```
-kafka-topics --create --topic nombre-del-topico --bootstrap-server kafka:9092
+kafka-topics --create --topic permission-topic --bootstrap-server kafka:9092
 ```
