@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Interface;
+using Domain.Entities;
 using Domain.Errors;
 using Domain.Interfaces;
 using ErrorOr;
@@ -9,10 +10,12 @@ namespace Application.Commands.UpdatePermission
     public sealed class UpdatePermissionCommandHandler : IRequestHandler<UpdatePermissionCommand, ErrorOr<Unit>>
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IElasticsearchRepository elasticsearchRepository;
 
-        public UpdatePermissionCommandHandler(IUnitOfWork unitOfWork)
+        public UpdatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
         }
 
         public async Task<ErrorOr<Unit>> Handle(UpdatePermissionCommand request, CancellationToken cancellationToken)
@@ -31,7 +34,7 @@ namespace Application.Commands.UpdatePermission
                 unitOfWork.Repository<Permission>().Update(permission);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // hacer la parte de elastic 
+                await elasticsearchRepository.UpdateIndex(permission);
                 // await kafkaProducer.ProduceMessage("permission-topic", "modify - permission", JsonConvert.SerializeObject(permission));
 
                 return Unit.Value;

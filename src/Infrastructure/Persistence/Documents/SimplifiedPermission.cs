@@ -4,21 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Querys.Dtos
+namespace Infrastructure.Persistence.Documents
 {
-    public class PermissionDto
+    public class SimplifiedPermission
     {
         public long Id { get; set; }
         public string NameEmployee { get; set; }
         public string LastNameEmployee { get; set; }
         public long PermissionTypeId { get; set; }
         public DateTime Date { get; set; }
-        public string FullName => $"{NameEmployee} {LastNameEmployee}";
-        public PermissionDto()
+        
+        public SimplifiedPermission()
         {
-
+            
         }
-        public PermissionDto(long id, string nameEmployee, string lastNameEmployee, long permissionTypeId, DateTime date)
+
+        public SimplifiedPermission(long id, string nameEmployee, string lastNameEmployee, long permissionTypeId, DateTime date)
         {
             Id = id;
             NameEmployee = nameEmployee;

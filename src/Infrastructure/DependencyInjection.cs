@@ -1,16 +1,10 @@
-﻿using Domain.Interfaces;
-using Elastic.Clients.Elasticsearch;
-using Elastic.Transport;
+﻿using Application.Interface;
+using Domain.Interfaces;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure
 {
@@ -29,21 +23,18 @@ namespace Infrastructure
             services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("database")));
             //services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IElasticsearchRepository, ElasticsearchRepository>();
 
             // inyecta repositorios 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             // inyecta servicios
             //services.AddScoped<IKafkaProducer>(p => new KafkaProducer(configuration["kafka:bootstrapServer"]));
+            
+            // cliente de elastic
+            services.AddSingleton<ElasticClientService>();
+            services.AddSingleton(sp => sp.GetRequiredService<ElasticClientService>().Client);
 
-            //var settingsElasticS = new ElasticsearchClientSettings(new Uri(configuration["elasticsearch:uri"]))
-            //    .Authentication(new BasicAuthentication(configuration["elasticsearch:username"], configuration["elasticsearch:password"]))
-            //    .ServerCertificateValidationCallback(CertificateValidations.AllowAll)
-            //    .DefaultIndex("permission");
-
-            //services.AddSingleton(new ElasticsearchClient(settingsElasticS));
-
-            //services.AddScoped(typeof(IElasticRepository<>), typeof(ElasticRepository<>));
 
             return services;
         }

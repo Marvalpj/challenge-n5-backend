@@ -27,8 +27,6 @@ namespace Infrastructure.Persistence.Configuration
             builder.Property(x => x.Date)
                    .IsRequired();
 
-            builder.Ignore(x => x.FullName);
-
             // Configura la relación con PermissionType
             builder.HasOne(x => x.PermissionType) // Relación de uno a muchos
                    .WithMany(p => p.Permissions)

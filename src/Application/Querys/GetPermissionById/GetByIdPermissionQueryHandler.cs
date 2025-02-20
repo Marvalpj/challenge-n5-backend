@@ -1,4 +1,5 @@
-﻿using Application.Querys.Dtos;
+﻿using Application.Interface;
+using Application.Querys.Dtos;
 using Domain.Entities;
 using Domain.Errors;
 using Domain.Interfaces;
@@ -10,10 +11,12 @@ namespace Application.Querys.GetPermissionById
     public sealed class GetByIdPermissionQueryHandler : IRequestHandler<GetByIdPermissionQuery, ErrorOr<PermissionDto>>
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IElasticsearchRepository elasticsearchRepository;
 
-        public GetByIdPermissionQueryHandler(IUnitOfWork unitOfWork)
+        public GetByIdPermissionQueryHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
         }
         public async Task<ErrorOr<PermissionDto>> Handle(GetByIdPermissionQuery request, CancellationToken cancellationToken)
         {
@@ -21,22 +24,21 @@ namespace Application.Querys.GetPermissionById
             {
                 //await kafkaProducer.ProduceMessage("permission-topic", "get - permission");
 
-                if (await unitOfWork.Repository<Permission>().GetByIdAsync(request.Id, p => p.PermissionType) is not Permission p)
+                Permission pElastic = await elasticsearchRepository.GetByIdAsync(request.Id.ToString());
+                if(pElastic is not null)
+                    return ReturnPermission(pElastic);
+
+                if (await unitOfWork.Repository<Permission>().GetByIdAsync(request.Id) is not Permission p)
                     return DomainError.Permission.PermissionIdDoesNotExist;
 
-                return new PermissionDto(
-                    p.Id,
-                    p.NameEmployee,
-                    p.LastNameEmployee,
-                    p.PermissionTypeId,
-                    p.PermissionType.Description,
-                    p.Date
-                );
+                return ReturnPermission(p);
             }
             catch (Exception ex)
             {
                 return Error.Failure("CreatePermissionType.Failure", ex.Message);
             }
         }
+
+        private PermissionDto ReturnPermission(Permission permission) => new PermissionDto( permission.Id, permission.NameEmployee, permission.LastNameEmployee, permission.PermissionTypeId, permission.Date);
     }
 }

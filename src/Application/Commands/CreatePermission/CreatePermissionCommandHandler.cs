@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Interface;
+using Domain.Entities;
 using Domain.Errors;
 using Domain.Interfaces;
 using ErrorOr;
@@ -9,10 +10,12 @@ namespace Application.Commands.CreatePermission
     public sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, ErrorOr<Unit>>
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly IElasticsearchRepository elasticsearchRepository;
 
-        public CreatePermissionCommandHandler(IUnitOfWork unitOfWork)
+        public CreatePermissionCommandHandler(IUnitOfWork unitOfWork, IElasticsearchRepository elasticsearchRepository)
         {
             this.unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            this.elasticsearchRepository = elasticsearchRepository ?? throw new ArgumentNullException(nameof(elasticsearchRepository));
         }
 
         public async Task<ErrorOr<Unit>> Handle(CreatePermissionCommand request, CancellationToken cancellationToken)
@@ -38,7 +41,9 @@ namespace Application.Commands.CreatePermission
 
                 await unitOfWork.Repository<Permission>().AddAsync(permission);
                 await unitOfWork.SaveChangesAsync(cancellationToken);
-                
+
+                await elasticsearchRepository.Index(permission);
+
                 //var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
                 //await kafkaProducer.ProduceMessage("permission-topic", "request permission", JsonConvert.SerializeObject(permission, settings));
 

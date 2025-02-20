@@ -23,7 +23,7 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            Log.Information("Buscar Permisos");
+            Log.Information("Getting all permissions");
 
             var result = await mediator.Send(new GetAllPermissionQuery());
 
@@ -47,11 +47,11 @@ namespace WebApi.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Create(CreatePermissionCommand createPermission)
+        public async Task<IActionResult> Create(CreatePermissionCommand command)
         {
-            Log.Information("Crear Permiso");
+            Log.Information("Requesting permission for {NameEmployee} {LastNameEmployee}", command.NameEmployee, command.LastNameEmployee);
 
-            var result = await mediator.Send(createPermission);
+            var result = await mediator.Send(command);
 
             return result.Match(
                 p => Ok(),
@@ -59,13 +59,12 @@ namespace WebApi.Controllers
             );
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(UpdatePermissionCommand updatePermission, long id)
+        [HttpPut()]
+        public async Task<IActionResult> Update(UpdatePermissionCommand command)
         {
-            Log.Information("Actualizar Permisos");
+            Log.Information("Modifying permission with Id: {Id}", command.Id);
 
-            updatePermission.Id = id;
-            var result = await mediator.Send(updatePermission);
+            var result = await mediator.Send(command);
 
             return result.Match(
                 p => Ok(),
