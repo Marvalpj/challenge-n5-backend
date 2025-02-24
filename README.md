@@ -10,7 +10,7 @@ Para levantar el proyecto, simplemente ejecuta el siguiente comando:
 docker-compose up -d
 ```
 # Creacion del topico en Kafka            
-### La unica tarea que no se pudo automatizar es la creacion del topico en Kafka. Para hacerlo, utiliza el siguiente comando:
+### Crear topico de kafka para enviar mensajes
 ```
 kafka-topics --create --topic permission-topic --bootstrap-server kafka:9092
 ```
